@@ -96,7 +96,7 @@
 import $ from 'jquery'
 
 // Initting vars
-let ssc;
+let ssc
 let msg = "VFTLAB Farming Stats"
 
 // available token pools
@@ -117,19 +117,21 @@ let aprStats = {}
 // save prices of tokens in hive
 let tokenPrices = {}
 
-$.when(
-    $.getScript( "https://cdn.jsdelivr.net/npm/sscjs@latest/dist/ssc.min.js" ),
-    $.Deferred(function( deferred ){
-      $( deferred.resolve );
-    })
-).done(function(){
-  // eslint-disable-next-line no-undef
+document.addEventListener("DOMContentLoaded", function(){
+  $.when(
+      $.getScript( "https://cdn.jsdelivr.net/npm/sscjs@latest/dist/ssc.min.js" ),
+      $.getScript( "https://unpkg.com/axios/dist/axios.min.js" ),
+      $.Deferred(function( deferred ){
+        $( deferred.resolve );
+      })
+  ).then(function(){
+    // eslint-disable-next-line no-undef
     ssc = new SSC('https://api.hive-engine.com/rpc')
-}).done(function () {
+  }).done(function () {
+
     init()
-})
-
-
+  })
+});
 function init() {
   updateData()
 }
