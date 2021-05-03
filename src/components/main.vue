@@ -28,8 +28,6 @@
             <br>
             <span class = "tokenText"> New VFT/Day:</span> <span> {{tokenStats["inflationRate"]}} </span>
             <br>
-            <span class = "tokenText"> VFT Price:</span> <span> {{ Number.parseFloat(tokenPrices["VFT"]).toFixed(3)}} HIVE </span>
-            <br>
           </div>
         </div> <!-- End token stats-->
 
@@ -87,8 +85,14 @@
             <br>
           </div>
         </div> <!-- End deposit stats-->
-      </div> <!-- End stats -->
-    </div>
+      </div>
+    </div> <!-- End stats -->
+    <br>
+    <div id = "infoBanner">
+      <span class = "tokenText"> VFT Price:</span> <span> {{ Number.parseFloat(tokenPrices["VFT"]).toFixed(3)}} HIVE | </span>
+      <span class = "tokenText"> TVL :</span> <span> {{ Number.parseFloat(tokenStats["tvl"]).toFixed(1)}} HIVE | </span>
+      <span class = "tokenText"> TVL/MC Ration :</span> <span> {{ Number.parseFloat(tokenStats["tvl"] / tokenStats["marketcap"]).toFixed(2)}} </span>
+    </div> <!-- End info Banner-->
   </div>
 </template>
 
@@ -103,18 +107,23 @@ let msg = "VFTLAB Farming Stats"
 const tokens = ['SWAP.HIVE', 'VIBES', 'STARBITS', 'LEO', 'DEC', 'VFT']
 
 // saves pooled token amounts
+// depositStats[token]
 let depositStats = {}
 
 // saves stats about the token
+// tokenStats["totalSupply"], tokenStats["burned"], tokenStats["marketcap"], tokenStats["inflationRate"], tokenStats["tvl"]
 let tokenStats = {}
 
 // save the inflation distribution
+// inflationStats[token]
 let inflationStats = {}
 
 // save apr rates
+// aprStats[token]
 let aprStats = {}
 
 // save prices of tokens in hive
+// tokenPrices[token]
 let tokenPrices = {}
 
 document.addEventListener("DOMContentLoaded", function(){
@@ -157,6 +166,7 @@ function getDepositedTokens() {
     //TODO Add correct Hive value (get from Hive directly, not HE)
   }).then(function () {
     getAPRStats() //TODO Fix async shit later
+    getTVL()
   })
   return tokenBal
 }
@@ -174,7 +184,7 @@ function getTokenStats() {
         // resolve(result)
       }).then(function (result) {
         tokenStats["totalSupply"] = formatNumber(result.supply)
-        setMarketCap()
+        getMarketCap()
         })
   // VFT burned
   ssc.findOne(
@@ -195,11 +205,13 @@ function getTokenStats() {
     if (result) {
       tokenStats["inflationRate"] = result.data.stats.new_vft_block
     }
+  }).always(function () {
+    getTokenPrices()
   });
 }
 
 // sets the market cap in tokenStats["marketcap"]; called in getTokenStats()
-function setMarketCap() {
+function getMarketCap() {
   // Market Cap in HIVE using last trading price
   ssc.findOne(
       'market',
@@ -253,12 +265,21 @@ function getTokenPrices() {
   }
 }
 
+function getTVL() {
+  let tvl = 0;
+  for (let token of tokens) {
+    // console.log(token + ": " + depositStats[token])
+    tvl += tokenPrices[token] * depositStats[token]
+  }
+  tokenStats["tvl"] = tvl
+}
+
 // Updates all numbers
 function updateData() {
-  getTokenPrices()
+  getTokenStats()
+  // getTokenPrices() Is called in getTokenStats
   // getDepositedTokens() Is called in getTokenPrices
   // getAPRStats() Is called in getDepositedTokens
-  getTokenStats()
   getInflationStats()
 }
 
@@ -276,6 +297,7 @@ function createTokenStatsObj() {
   tokenStats["burned"] = 0
   tokenStats["marketcap"] = 0
   tokenStats["inflationRate"] = 1000
+  tokenStats["tvl"] = 0
   return tokenStats
 }
 
@@ -300,6 +322,8 @@ function createTokenPricesObj() {
   for (let token of tokens) {
     tokenPrices[token] = 0
   }
+  tokenPrices["HIVE"] = 1
+  tokenPrices["SWAP.HIVE"] = 1
   return tokenPrices
 }
 
@@ -438,4 +462,16 @@ button:hover {
   width: max-content;
   padding: 5px;
 }
+
+#infoBanner {
+  color: #000;
+  margin: 0 auto;
+  border: 1px solid black;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.8);
+  width: max-content;
+  padding: 5px;
+  font-weight: bold;
+  font-size: large;
+ }
 </style>
