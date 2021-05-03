@@ -53,17 +53,17 @@
         <div id = "depositStats" class = "statsBox">
           <p> Total deposited funds: </p>
           <div>
-            <span class = "tokenText"> HIVE (currently wrong):</span> <span> {{tokenAmounts['SWAP.HIVE']}} </span>
+            <span class = "tokenText"> HIVE:</span> <span> {{ formatNumber(depositStats['SWAP.HIVE']) }} </span>
             <br>
-            <span class = "tokenText"> VIBES:</span> <span> {{tokenAmounts['VIBES']}} </span>
+            <span class = "tokenText"> VIBES:</span> <span> {{ formatNumber(depositStats['VIBES']) }} </span>
             <br>
-            <span class = "tokenText"> VFT:</span> <span> {{tokenAmounts['VFT']}} </span>
+            <span class = "tokenText"> VFT:</span> <span> {{ formatNumber(depositStats['VFT']) }} </span>
             <br>
-            <span class = "tokenText"> LEO:</span> <span> {{tokenAmounts['LEO']}} </span>
+            <span class = "tokenText"> LEO:</span> <span> {{ formatNumber(depositStats['LEO']) }} </span>
             <br>
-            <span class = "tokenText"> DEC:</span> <span> {{tokenAmounts['DEC']}} </span>
+            <span class = "tokenText"> DEC:</span> <span> {{ formatNumber(depositStats['DEC']) }} </span>
             <br>
-            <span class = "tokenText"> STARBITS:</span> <span> {{tokenAmounts['STARBITS']}} </span>
+            <span class = "tokenText"> STARBITS:</span> <span> {{ formatNumber(depositStats['STARBITS']) }} </span>
             <br>
           </div>
         </div> <!-- End deposit stats-->
@@ -130,6 +130,7 @@ document.addEventListener("DOMContentLoaded", function(){
   $.when(
       $.getScript( "https://cdn.jsdelivr.net/npm/sscjs@latest/dist/ssc.min.js" ),
       $.getScript( "https://unpkg.com/axios/dist/axios.min.js" ),
+      $.getScript( "https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js" ),
       $.Deferred(function( deferred ){
         $( deferred.resolve );
       })
@@ -137,7 +138,6 @@ document.addEventListener("DOMContentLoaded", function(){
     // eslint-disable-next-line no-undef
     ssc = new SSC('https://api.hive-engine.com/rpc')
   }).done(function () {
-
     init()
   })
 });
@@ -148,27 +148,33 @@ function init() {
 // Updates tokens deposited to the pools
 // depositStats objects stores the values
 function getDepositedTokens() {
-  let tokenBal = {}
-  ssc.find(
-      'tokens',
-      'balances',
-      {
-        account:  'vftlab'
-      }, (result) => {
-        // eslint-disable-next-line no-undef
-        resolve(result)
-      }).then(function (result) {
-    for (let token of result) {
-      let tokenbal = formatNumber(token.balance)
-      depositStats[token.symbol] = tokenbal
-      tokenBal[token.symbol] = tokenbal
-    }
-    //TODO Add correct Hive value (get from Hive directly, not HE)
-  }).then(function () {
-    getAPRStats() //TODO Fix async shit later
-    getTVL()
+  // Get native Hive balance
+  // eslint-disable-next-line no-undef
+  hive.api.callAsync('condenser_api.get_accounts', [['vftlab']])
+      .then(function (result) {
+        depositStats["SWAP.HIVE"] = parseFloat((result[0].balance).split(" "))
+      }).then(function () {
+    // Get HE balances
+    ssc.find(
+        'tokens',
+        'balances',
+        {
+          account:  'vftlab'
+        }, (result) => {
+          // eslint-disable-next-line no-undef
+          resolve(result)
+        }).then(function (result) {
+      for (let token of result) {
+        if (token.symbol == "SWAP.HIVE") continue;
+        let tokenbal = token.balance
+        depositStats[token.symbol] = tokenbal
+      }
+      //TODO Add correct Hive value (get from Hive directly, not HE)
+    }).then(function () {
+      getAPRStats() //TODO Fix async shit later
+      getTVL()
+    })
   })
-  return tokenBal
 }
 
 // get Stats about the VFT token itself
@@ -221,7 +227,6 @@ function getMarketCap() {
         // eslint-disable-next-line no-unused-vars
       }, (result) => {
       }).then(function (result) {
-    // console.log("Price: " + result.lastPrice + " Supply: " + (tokenStats["totalSupply"] - tokenStats["burned"]))
     tokenStats["marketcap"] = formatNumber(result.lastPrice * (tokenStats["totalSupply"] - tokenStats["burned"]))
   })
 }
@@ -245,12 +250,16 @@ function  getAPRStats() {
       let yieldValue = vftYield * tokenPrices["VFT"]
       let dailyAPR = yieldValue / depositsValue * 100
       aprStats[token] = dailyAPR * 365
+      // console.log("Token: " + token + "\t" + depositStats[token] + "\t"+ tokenPrices[token])
     }
 }
 
 function getTokenPrices() {
   for (let token of tokens) {
-    if (token == "SWAP.HIVE") continue;
+    if (token == "SWAP.HIVE") {
+      tokenPrices["SWAP.HIVE"] = 1
+      continue;
+    }
     ssc.findOne(
         'market',
         'metrics',
@@ -268,7 +277,6 @@ function getTokenPrices() {
 function getTVL() {
   let tvl = 0;
   for (let token of tokens) {
-    // console.log(token + ": " + depositStats[token])
     tvl += tokenPrices[token] * depositStats[token]
   }
   tokenStats["tvl"] = tvl
@@ -345,7 +353,7 @@ export default {
       msg: msg,
       tokenStats: createTokenStatsObj(),
       inflationStats: createInflationStatsObj(),
-      tokenAmounts: createTokenAmountsObj(),
+      depositStats: createTokenAmountsObj(),
       aprStats: createAPRStatsObj(),
       tokenPrices: createTokenPricesObj()
     }
