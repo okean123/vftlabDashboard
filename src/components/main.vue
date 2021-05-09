@@ -129,7 +129,7 @@
             <br>
             <span class = "tokenText"> Deposited:</span> <span> {{formatNumber(userStats['LEO'])}} </span>
             <br>
-            <span class = "tokenText"> Pool Share:</span> <span> {{ (userStats['LEO'] / depositStats['LEO']).toFixed(3) * 100 }}% </span>
+            <span class = "tokenText"> Pool Share:</span> <span> {{ (userStats['LEO'] / depositStats['LEO'] * 100).toFixed(3) }}% </span>
             <br>
             <span class = "tokenText"> Expected VFT:</span>
             <span> {{ ((userStats['LEO'] / depositStats['LEO']) * tokenStats["inflationRate"] * inflationStats['LEO'] / 100).toFixed(2) }} </span>
