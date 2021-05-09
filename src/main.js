@@ -8,7 +8,7 @@ Vue.config.productionTip = false
 Vue.loadScript("https://unpkg.com/axios/dist/axios.min.js")
     .then(() => {
         Vue.loadScript("https://cdn.jsdelivr.net/npm/sscjs@latest/dist/ssc.min.js").then(function () {
-            new Vue({
+            window.App = new Vue({
                 render: h => h(App),
             }).$mount('#app')
         })

@@ -4,15 +4,13 @@
     <h1> {{ msg }}</h1>
     <br>
     <div id = "infoBox">
-      <p> Note that you need to install and activate an extension like 'Allow CORS: Access-Control-Allow-Origin' </p>
-      <p> in your browser for the app to work correctly: <a href="https://chrome.google.com/webstore/detail/allow-cors-access-control/lhobafahddgcelffkeicbaginigeejlf">Chrome</a>
-        or <a href="https://addons.mozilla.org/de/firefox/addon/access-control-allow-origin/">Firefox</a> </p>
+      <p> Sometimes the data won't load when opening the page. In that case please try to reload the app.</p>
     </div>
     <br>
     <button @click="updateData"> Update data</button>
     <br>
     <br>
-    <div id = "stats">
+    <div id = "generalStats" class="stats">
       <div>
         <div id = "tokenStats" class = "statsBox">
           <p> Token stats:</p>
@@ -86,13 +84,98 @@
           </div>
         </div> <!-- End deposit stats-->
       </div>
-    </div> <!-- End stats -->
+    </div> <!-- End generalStats -->
     <br>
     <div id = "infoBanner">
       <span class = "tokenText"> VFT Price:</span> <span> {{ Number.parseFloat(tokenPrices["VFT"]).toFixed(3)}} HIVE | </span>
       <span class = "tokenText"> TVL :</span> <span> {{ Number.parseFloat(tokenStats["tvl"]).toFixed(1)}} HIVE | </span>
       <span class = "tokenText"> TVL/MC Ration :</span> <span> {{ Number.parseFloat(tokenStats["tvl"] / tokenStats["marketcap"]).toFixed(2)}} </span>
     </div> <!-- End info Banner-->
+    <br>
+    <div id = "userNav">
+      <input @keyup.enter="setUser()" type="text" id="userInput" placeholder="Username">
+      <button id="setUserButton" @click="setUser()"> Show User </button>
+    </div>
+    <br>
+    <div v-show="showUser" id = "userStats" class = "stats">
+      <ul>
+        <li>
+          <div id = "userStatsVIBES" class="statsBox">
+            VIBES
+            <br>
+            <span class = "tokenText"> Deposited:</span> <span> {{formatNumber(userStats['VIBES'])}} </span>
+            <br>
+            <span class = "tokenText"> Pool Share:</span> <span> {{ (userStats['VIBES'] / depositStats['VIBES'] * 100 ).toFixed(3) }}% </span>
+            <br>
+            <span class = "tokenText"> Expected VFT:</span>
+            <span> {{ ((userStats['VIBES'] / depositStats['VIBES']) * tokenStats["inflationRate"] * inflationStats['VIBES'] / 100).toFixed(2) }} </span>
+          </div><!--  end user vibes-->                 <!-- tokenStats["inflationRate"] * inflationStats['VIBES'] / 100 ==  1000 * 30 / 100 == new VFT for VIBES each day etc-->
+        </li>
+        <li>
+          <div id = "userStatsSTARBITS" class="statsBox">
+            STARBITS
+            <br>
+            <span class = "tokenText"> Deposited:</span> <span> {{formatNumber(userStats['STARBITS'])}} </span>
+            <br>
+            <span class = "tokenText"> Pool Share:</span> <span> {{ (userStats['STARBITS'] / depositStats['STARBITS'] * 100 ).toFixed(3) }}% </span>
+            <br>
+            <span class = "tokenText"> Expected VFT:</span>
+            <span> {{ ((userStats['STARBITS'] / depositStats['STARBITS']) * tokenStats["inflationRate"] * inflationStats['STARBITS'] / 100).toFixed(2) }} </span>
+          </div> <!--  end user STARBITS-->
+        </li>
+        <li>
+          <div id = "userStatsLEO" class="statsBox">
+            LEO
+            <br>
+            <span class = "tokenText"> Deposited:</span> <span> {{formatNumber(userStats['LEO'])}} </span>
+            <br>
+            <span class = "tokenText"> Pool Share:</span> <span> {{ (userStats['LEO'] / depositStats['LEO']).toFixed(3) * 100 }}% </span>
+            <br>
+            <span class = "tokenText"> Expected VFT:</span>
+            <span> {{ ((userStats['LEO'] / depositStats['LEO']) * tokenStats["inflationRate"] * inflationStats['LEO'] / 100).toFixed(2) }} </span>
+          </div> <!--  end user LEO-->
+        </li>
+      </ul>
+      <br>
+      <ul>
+        <li>
+          <div id = "userStatsDEC" class="statsBox">
+            DEC
+            <br>
+            <span class = "tokenText"> Deposited:</span> <span> {{formatNumber(userStats['DEC'])}} </span>
+            <br>
+            <span class = "tokenText"> Pool Share:</span> <span> {{ (userStats['DEC'] / depositStats['DEC']).toFixed(3) * 100 }}% </span>
+            <br>
+            <span class = "tokenText"> Expected VFT:</span>
+            <span> {{ ((userStats['DEC'] / depositStats['DEC']) * tokenStats["inflationRate"] * inflationStats['DEC'] / 100).toFixed(2) }} </span>
+          </div> <!--  end user DEC-->
+        </li>
+        <li>
+          <div id = "userStatsVFT" class="statsBox">
+            VFT
+            <br>
+            <span class = "tokenText"> Deposited:</span> <span> {{formatNumber(userStats['VFT'])}} </span>
+            <br>
+            <span class = "tokenText"> Pool Share:</span> <span> {{ (userStats['VFT'] / depositStats['VFT']).toFixed(3) * 100 }}% </span>
+            <br>
+            <span class = "tokenText"> Expected VFT:</span>
+            <span> {{ ((userStats['VFT'] / depositStats['VFT']) * tokenStats["inflationRate"] * inflationStats['VFT'] / 100).toFixed(2) }} </span>
+          </div> <!--  end user VFT-->
+        </li>
+        <li>
+          <div id = "userStatsHIVE" class="statsBox">
+            HIVE
+            <br>
+            <span class = "tokenText"> Deposited:</span> <span> {{formatNumber(userStats['HIVE'])}} </span>
+            <br>
+            <span class = "tokenText"> Pool Share:</span> <span> {{ (userStats['HIVE'] / depositStats['SWAP.HIVE']).toFixed(3) * 100 }}% </span>
+            <br>
+            <span class = "tokenText"> Expected VFT:</span>
+            <span> {{ ((userStats['HIVE'] / depositStats['SWAP.HIVE']) * tokenStats["inflationRate"] * inflationStats['SWAP.HIVE'] / 100).toFixed(2) }} </span>
+          </div> <!--  end user VFT-->
+        </li>
+      </ul>
+    </div> <!--  end user stats-->
   </div>
 </template>
 
@@ -102,6 +185,9 @@ import $ from 'jquery'
 // Initting vars
 let ssc
 let msg = "VFTLAB Farming Stats"
+
+let currentUser = ''
+let showUser = false
 
 // available token pools
 const tokens = ['SWAP.HIVE', 'VIBES', 'STARBITS', 'LEO', 'DEC', 'VFT']
@@ -114,7 +200,7 @@ let depositStats = {}
 // tokenStats["totalSupply"], tokenStats["burned"], tokenStats["marketcap"], tokenStats["inflationRate"], tokenStats["tvl"]
 let tokenStats = {}
 
-// save the inflation distribution
+// save the inflation distribution (% from total)
 // inflationStats[token]
 let inflationStats = {}
 
@@ -125,6 +211,10 @@ let aprStats = {}
 // save prices of tokens in hive
 // tokenPrices[token]
 let tokenPrices = {}
+
+//saves data related to specifc user
+// userStats[user], userStats[token] (= deposited)
+let userStats = {}
 
 document.addEventListener("DOMContentLoaded", function(){
   $.when(
@@ -173,6 +263,9 @@ function getDepositedTokens() {
     }).then(function () {
       getAPRStats() //TODO Fix async shit later
       getTVL()
+      if (currentUser) {
+        getUserWallet(currentUser)
+      }
     })
   })
 }
@@ -274,6 +367,17 @@ function getTokenPrices() {
   }
 }
 
+function getUserWallet(user) {
+  for (let token of tokens) {
+    userStats[token] = 0
+  }
+  $.get('https://vftlab.herokuapp.com/getUserWallet/' + user).then(function (result) {
+    for (let wallet of result.data.wallets) {
+      userStats[wallet.moneda.coind_name] = wallet.balance
+    }
+  })
+}
+
 function getTVL() {
   let tvl = 0;
   for (let token of tokens) {
@@ -288,7 +392,19 @@ function updateData() {
   // getTokenPrices() Is called in getTokenStats
   // getDepositedTokens() Is called in getTokenPrices
   // getAPRStats() Is called in getDepositedTokens
+  // getUserWallet() Is called in getDepositedTokens
   getInflationStats()
+}
+
+// sets the current user and calls method to update data
+function setUser() {
+  let user = $('#userInput').val()
+  if (user == "") {
+    return
+  }
+  currentUser = user
+  this.showUser = true
+  getUserWallet(currentUser)
 }
 
 // Creates a dummy object for the token amounts object to pass on page load
@@ -335,6 +451,15 @@ function createTokenPricesObj() {
   return tokenPrices
 }
 
+function createUserStatsObj() {
+  userStats["user"] = null
+  for (let token of tokens) {
+    userStats[token] = 0
+  }
+  userStats["HIVE"] = 0
+  return userStats
+}
+
 // rounds number and adds space after each block of 3 numbers
 function formatNumber(n) {
   // round to 0 decimal places
@@ -345,7 +470,6 @@ function formatNumber(n) {
   return n
 }
 
-
 export default {
   name: 'HelloWorld',
   data() {
@@ -355,12 +479,15 @@ export default {
       inflationStats: createInflationStatsObj(),
       depositStats: createTokenAmountsObj(),
       aprStats: createAPRStatsObj(),
-      tokenPrices: createTokenPricesObj()
+      tokenPrices: createTokenPricesObj(),
+      userStats: createUserStatsObj(),
+      showUser
     }
   },
   methods: {
     updateData,
-    formatNumber
+    formatNumber,
+    setUser
   },
   mounted() {
     let axiosscript = document.createElement('script')
@@ -397,7 +524,7 @@ a {
   color: #42b983;
 }
 
-#stats {
+.stats {
   -webkit-text-size-adjust: 100%;
   font-family: Verdana,sans-serif;
   line-height: 1.5;
@@ -415,7 +542,7 @@ a {
   background: rgba(0, 0, 0, 0.5);
   font-size: 1.05em;
   align-items: center;
-  display: flex;
+  display: block;
   justify-content: center;
 }
 
@@ -443,7 +570,6 @@ button {
   background-color: rgb(170, 137, 41);
   border: 0;
   border-radius: 16px;
-  box-shadow: 0 0 7px 3px rgba(0,0,0,0.8);
   color: rgb(255, 255, 255);
   display: inline-flex;
   font-weight: 600;
@@ -482,4 +608,29 @@ button:hover {
   font-weight: bold;
   font-size: large;
  }
+
+input {
+  align-items: center;
+  background-color: rgb(170, 137, 41);
+  border: 0;
+  border-radius: 16px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 600;
+  height: 50px;
+  padding: 0 12px;
+  margin-right: 5px;
+}
+
+input:focus, select:focus, textarea:focus, button:focus {
+  outline: none;
+}
+
+ul {
+  display: table;
+}
+
+li {
+  display: inline-table;
+  max-width: 30%;
+}
 </style>
