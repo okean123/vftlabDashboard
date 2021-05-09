@@ -371,6 +371,7 @@ function getUserWallet(user) {
   for (let token of tokens) {
     userStats[token] = 0
   }
+  userStats['HIVE'] = 0
   $.get('https://vftlab.herokuapp.com/getUserWallet/' + user).then(function (result) {
     for (let wallet of result.data.wallets) {
       userStats[wallet.moneda.coind_name] = wallet.balance
