@@ -44,6 +44,8 @@
             <br>
             <span class = "tokenText"> STARBITS:</span> <span> {{ tokenStats["inflationRate"] * inflationStats['STARBITS'] / 100}} ({{inflationStats['STARBITS']}}%) </span>
             <br>
+            <span class = "tokenText"> PIZZA:</span> <span> {{ tokenStats["inflationRate"] * inflationStats['PIZZA'] / 100}} ({{inflationStats['PIZZA']}}%) </span>
+            <br>
             <br>
           </div>
         </div> <!-- End inflation stats-->
@@ -63,6 +65,8 @@
             <br>
             <span class = "tokenText"> STARBITS:</span> <span> {{ formatNumber(depositStats['STARBITS']) }} </span>
             <br>
+            <span class = "tokenText"> PIZZA:</span> <span> {{ formatNumber(depositStats['PIZZA']) }} </span>
+            <br>
           </div>
         </div> <!-- End deposit stats-->
 
@@ -80,6 +84,8 @@
             <span class = "tokenText"> DEC:</span> <span> {{formatNumber(aprStats['DEC'])}}% </span>
             <br>
             <span class = "tokenText"> STARBITS:</span> <span> {{formatNumber(aprStats['STARBITS'])}}% </span>
+            <br>
+            <span class = "tokenText"> PIZZA:</span> <span> {{formatNumber(aprStats['PIZZA'])}}% </span>
             <br>
           </div>
         </div> <!-- End deposit stats-->
@@ -172,7 +178,19 @@
             <br>
             <span class = "tokenText"> Expected VFT:</span>
             <span> {{ ((userStats['HIVE'] / depositStats['SWAP.HIVE']) * tokenStats["inflationRate"] * inflationStats['SWAP.HIVE'] / 100).toFixed(2) }} </span>
-          </div> <!--  end user VFT-->
+          </div> <!--  end user HIVE-->
+        </li>
+        <li>
+          <div id = "userStatsPIZZA" class="statsBox">
+            PIZZA
+            <br>
+            <span class = "tokenText"> Deposited:</span> <span> {{formatNumber(userStats['PIZZA'])}} </span>
+            <br>
+            <span class = "tokenText"> Pool Share:</span> <span> {{ (userStats['PIZZA'] / depositStats['PIZZA']).toFixed(3) * 100 }}% </span>
+            <br>
+            <span class = "tokenText"> Expected VFT:</span>
+            <span> {{ ((userStats['PIZZA'] / depositStats['PIZZA']) * tokenStats["inflationRate"] * inflationStats['PIZZA'] / 100).toFixed(2) }} </span>
+          </div> <!--  end user PIZZA-->
         </li>
       </ul>
     </div> <!--  end user stats-->
@@ -190,7 +208,7 @@ let currentUser = ''
 let showUser = false
 
 // available token pools
-const tokens = ['SWAP.HIVE', 'VIBES', 'STARBITS', 'LEO', 'DEC', 'VFT']
+const tokens = ['SWAP.HIVE', 'VIBES', 'STARBITS', 'LEO', 'DEC', 'VFT', 'PIZZA']
 
 // saves pooled token amounts
 // depositStats[token]
@@ -329,6 +347,10 @@ function getInflationStats() {
   $.get('https://vftlab.herokuapp.com/getMonedas/').then(function (result) {
     if (result) {
       for (let token of result.data.monedas) {
+        if (token == "HIVE") {
+          inflationStats["SWAP.HIVE"] = token.pool
+          inflationStats[token.coind_name] = token.pool
+        }
         inflationStats[token.coind_name] = token.pool
       }
     }
@@ -429,10 +451,11 @@ function createTokenStatsObj() {
 function createInflationStatsObj() {
   inflationStats["VIBES"] = 30
   inflationStats["VFT"] = 20
-  inflationStats["SWAP.HIVE"] = 20
+  inflationStats["SWAP.HIVE"] = 15
   inflationStats["LEO"] = 12.5
   inflationStats["DEC"] = 12.5
   inflationStats["STARBITS"] = 5
+  inflationStats["PIZZA"] = 5
   return inflationStats
 }
 
