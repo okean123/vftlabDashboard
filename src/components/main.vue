@@ -11,7 +11,7 @@
     <br>
     <br>
     <div id = "generalStats" class="stats">
-      <div>
+      <div class="flex">
         <div id = "tokenStats" class = "statsBox">
           <p> Token stats:</p>
           <div>
@@ -577,7 +577,7 @@ a {
   padding: 0.2em 16px;
   font-weight: bold;
   background: rgba(255, 255, 255, 0.8);
-  margin: 0 auto;
+  margin: 0 5px;
 }
 
 .tokenText {
@@ -650,11 +650,20 @@ input:focus, select:focus, textarea:focus, button:focus {
 }
 
 ul {
-  display: table;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
 }
 
 li {
   display: inline-table;
   max-width: 30%;
+}
+
+.flex {
+  display: flex;
+  padding: 5px;
+  flex-wrap: wrap;
+  align-items: stretch;
 }
 </style>
